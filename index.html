@@ -1,0 +1,218 @@
+<!doctype html>
+<!--[if lt IE 7]>      <html class="no-js lt-ie9 lt-ie8 lt-ie7" lang=""> <![endif]-->
+<!--[if IE 7]>         <html class="no-js lt-ie9 lt-ie8" lang=""> <![endif]-->
+<!--[if IE 8]>         <html class="no-js lt-ie9" lang=""> <![endif]-->
+<!--[if gt IE 8]><!--> <html class="no-js" lang=""> <!--<![endif]-->
+    <head>
+        <meta charset="utf-8">
+        <meta http-equiv="X-UA-Compatible" content="IE=edge,chrome=1">
+        <title></title>
+        <meta name="description" content="">
+        <meta name="viewport" content="width=device-width, initial-scale=1">
+        <link rel="apple-touch-icon" href="apple-touch-icon.png">
+
+        <link rel="stylesheet" href="css/bootstrap.min.css">
+        <style>
+            body {
+                padding-top: 50px;
+                padding-bottom: 20px;
+            }
+        </style>
+        <link rel="stylesheet" href="css/bootstrap-theme.min.css">
+        <link rel="stylesheet" href="css/main.css">
+
+        <script src="js/vendor/modernizr-2.8.3-respond-1.4.2.min.js"></script>
+<!--        <script src="https://ajax.googleapis.com/ajax/libs/angularjs/1.3.0-beta.17/angular.min.js"></script> -->
+    </head>
+    <body ng-app="myapp">
+        <!--[if lt IE 8]>
+            <p class="browserupgrade">You are using an <strong>outdated</strong> browser. Please <a href="http://browsehappy.com/">upgrade your browser</a> to improve your experience.</p>
+        <![endif]-->
+    <nav class="navbar navbar-inverse navbar-fixed-top" role="navigation">
+      <div class="container">
+        <div class="navbar-header">
+          <button type="button" class="navbar-toggle collapsed" data-toggle="collapse" data-target="#navbar" aria-expanded="false" aria-controls="navbar">
+            <span class="sr-only">Toggle navigation</span>
+            <span class="icon-bar"></span>
+            <span class="icon-bar"></span>
+            <span class="icon-bar"></span>
+          </button>
+          <a class="navbar-brand" href="#">Jira Time Logger</a>
+        </div>
+        <!--
+        <div id="navbar" class="navbar-collapse collapse">
+          <form class="navbar-form navbar-right" role="form">
+            <div class="form-group">
+              <input type="text" placeholder="Email" class="form-control">
+            </div>
+            <div class="form-group">
+              <input type="password" placeholder="Password" class="form-control">
+            </div>
+            <button type="submit" class="btn btn-success">Sign in</button>
+          </form>
+        </div><!- -/.navbar-collapse - -> -->
+      </div>
+    </nav>
+
+<datalist id="my_issues">
+  <option id="HALO-42" value="HALO-42 - MFA">
+  <option id="HALO-43" value="HALO-43 - MFA - QR Code Generation">
+  <option id="HALO-102" value="HALO-102 - MFA - Set up screen">
+  <option id="HALO-103" value="HALO-103 - MFA - Log in Screen">
+</datalist>
+
+<div ng-controller="TimeController" style="float: right; margin-top:10px; margin-right:10px;">{{ thetimenow | date:'HH:mm:ss' }}</div>
+
+<ul class="nav nav-tabs">
+  <li role="presentation"><a href="#">07/12/2015</a></li>
+  <li role="presentation" class="active"><a href="#">08/12/2015</a></li>
+  <li role="presentation"><a href="#">+</a></li>
+</ul>
+
+    <div class="container" ng-controller="WorkLogDayController" style="width:100%">
+      <table class="table">
+        <thead>
+          <tr>
+            <th>Description</th>
+            <th>Issue</th>
+            <th style="width:75px">Start time</th>
+            <th style="width:75px">Duration</th>
+            <th style="width:200px">Actions</th>
+          </tr>
+        </thead>
+        <tbody>
+          <tr class="item" ng-form name="entryForm" ng-class="{success: worklogentry.committed && !worklogentry.processingState, warning: worklogentry.processingState}" ng-repeat="worklogentry in worklogentries">
+            <td class="item-description">
+              <div class="form-group">
+                <span ng-hide="!worklogentry.committed || worklogentry.processingState">{{worklogentry.description}}</span>
+                <input class="form-control" ng-show="!worklogentry.committed || worklogentry.processingState" type="text" ng-model="worklogentry.description" style="width: 100%"></input>
+              </div>
+            </td>
+            <td class="item-issue">
+              <div class="form-group">
+                <span ng-hide="!worklogentry.committed || worklogentry.processingState">{{worklogentry.issue}}</span>
+                <input class="form-control" ng-show="!worklogentry.committed || worklogentry.processingState" type="text" ng-model="worklogentry.issue" style="width: 100%" list="my_issues"></input>
+              </div>
+            </td>
+            <td class="item-start-time">
+              <span ng-hide="!worklogentry.committed || worklogentry.processingState">{{ worklogentry.estimatedStartTime | time }}</span>
+              <div class="form-group" ng-class="{'has-error': entryForm.entryStartTime.$invalid}">
+                <input class="form-control" time ng-show="!worklogentry.committed || worklogentry.processingState" ng-model="worklogentry.estimatedStartTime" type="text" placeholder="{{ worklogentry.estimatedStartTime | time }}" style="width:75px" name="entryStartTime"></input>
+              </div>
+            </td>
+            <td class="item-duration">
+              <div class="form-group" ng-class="{'has-error': entryForm.entryDuration.$invalid}">
+                <span ng-hide="!worklogentry.committed || worklogentry.processingState">{{ worklogentry.estimatedDuration | duration }}</span>
+                <input class="form-control" time-duration ng-show="!worklogentry.committed || worklogentry.processingState" ng-model="worklogentry.duration" type="text" placeholder="{{ worklogentry.estimatedDuration | duration }}" style="width:75px" name="entryDuration"></input>
+              </div>
+            </td>
+            <td>
+              <div class="form-group">
+                <button class="form-control" ng-hide="worklogentry.committed || worklogentry.processingState" ng-click='commit(entryForm, worklogentry)'>Commit</button> 
+                <button class="form-control" ng-hide="!worklogentry.committed || worklogentry.processingState" ng-click='edit(worklogentry)'>Edit</button>
+                <button class="form-control" ng-hide="worklogentry.committed || worklogentry.processingState" ng-click='delete(worklogentry)'>Delete</button>
+                <span ng-hide="!worklogentry.processingState">{{worklogentry.processingState}}</span>
+              </div>
+            </td>
+          </tr>
+          <tr class="info newEntry" ng-form name="newEntryForm">
+            <td class="item-description">
+              <div class="form-group">
+                <input class="form-control" type="text" ng-model="newItemDescription" style="width: 100%" ng-blur='checkForNewEntry()'></input>
+              </div>
+            </td>
+            <td class="item-issue">
+              <div class="form-group">
+                <input class="form-control" type="text" ng-model="newItemIssue" style="width: 100%" list="my_issues" ng-blur='checkForNewEntry()'></input>
+              </div>
+            </td>
+            <td class="item-start-time">
+              <div class="form-group" ng-class="{'has-error': entryForm.entryStartTime.$invalid}">
+                <input class="form-control" type="text" time placeholder="{{ nextStartTimeOrTheTimeNow | time }}" style="width:75px" ng-model="newItemStartTime" name="entryStartTime" ng-blur='checkForNewEntry()'></input>
+              </div>
+            </td>
+            <td class="item-duration">
+              <div class="form-group" ng-class="{'has-error': newEntryForm.newItemDuration.$invalid}">
+                <input class="form-control" type="text" time-duration placeholder="{{ durationSinceTheLastWorkLogEntry | duration }}" style="width:75px" ng-model="newItemDuration" name="newItemDuration" ng-blur='checkForNewEntry()'></input>
+              </div>
+            </td>
+            <td></td>
+          </tr>
+        </tbody>
+        <tfoot>
+          <tr>
+            <th></th>
+            <th></th>
+            <th></th>
+            <th>3h 15m</th>  
+            <th>
+              <button>Commit All</button>
+              <button>Delete All</button>
+            </th> 
+          </tr>
+        </tfoot>
+      </table>
+    </div>
+
+<!--
+    <div class="container">
+        <table class="table">
+    <thead>
+      <tr>
+        <th>Issue</th>
+        <th style="width:75px">Start time</th>
+        <th style="width:75px">Duration</th>
+        <th style="width:200px">Actions</th>
+      </tr>
+    </thead>
+    <tbody>
+      <tr class="success">
+        <td>HALO-42 - MFA Authentication - Log in Screen</td>
+        <td>09:00</td>
+        <td>1h10m</td>
+        <td><button>Edit</button></td>
+      </tr>
+      <tr class="success">
+        <td>HALO-42 - MFA Authentication - Log in Screen</td>
+        <td>10:10</td>
+        <td>1h20m</td>
+        <td><button>Edit</button></td>
+      </tr>
+      <tr>
+        <td><input type="text" value="HALO-42 - MFA Authentication - Log in Screen" style="width: 100%" list="my_issues"></input></td>
+        <td><input type="text" placeholder="11:30" style="width:75px"></input></td>
+        <td><input type="text" value="1h10m" style="width:75px"></input></td>
+        <td><button>Delete</button><button>Commit</button></td>
+      </tr>
+      <tr>
+        <td><input type="text" value="" style="width: 100%" list="my_issues"></input></td>
+        <td><input type="text" placeholder="12:40" style="width:75px"></input></td>
+        <td><input type="text" placeholder="2h50m" style="width:75px"></input></td>
+        <td><button>Delete</button><button>Commit</button></td>
+      </tr>
+    </tbody>
+    <tfoot>
+    <tr>
+    <th></th>
+    <th colspan="">3h40m</th> 
+    <th></th> 
+    <th><button>Delete All</button><button>Commit All</button></th> 
+    </tr>
+    </tfoot>
+  </table> -->
+
+      <hr>
+
+      <footer>
+        <p>&copy; Company 2015</p>
+      </footer>
+    </div> <!-- /container -->        
+        <!-- <script src="https://ajax.googleapis.com/ajax/libs/jquery/1.11.2/jquery.min.js"></script> -->
+        <script>window.jQuery || document.write('<script src="js/vendor/jquery-1.11.2.min.js"><\/script>')</script>
+        <script>document.write('<script src="js/vendor/angular.min.js"><\/script>')</script>
+
+        <script src="js/vendor/bootstrap.min.js"></script>
+
+        <script src="js/main.js"></script>
+    </body>
+</html>
